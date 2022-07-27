@@ -2,8 +2,8 @@
 
 _pkgname="hyprland"
 pkgname="${_pkgname}"
-pkgver="0.6.3beta"
-pkgrel=2
+pkgver="0.8.1beta"
+pkgrel=1
 pkgdesc="A dynamic tiling Wayland compositor based on wlroots that doesn't sacrifice on its looks."
 arch=(any)
 url="https://github.com/hyprwm/Hyprland"
@@ -44,18 +44,18 @@ makedepends=(
 	gcc
 	gdb
 	meson
+	pandoc
 	vulkan-headers
 	wayland-protocols
 	xorgproto)
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/hyprwm/hyprland/archive/v${pkgver}.tar.gz")
-sha256sums=('ed383c48e7864cbffb4c1f413f02c42c1e927b4f00a0a00f30de64fb2a71ca23')
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/hyprwm/Hyprland/releases/download/v${pkgver}/source-v${pkgver}.tar.gz")
+sha256sums=('2373103068e6fdb9581dc54aff70d389fc54192b65079920476335c40120f210')
 conflicts=("${_pkgname}")
 provides=(hyprland)
 options=(!makeflags !buildflags !strip)
 
 build() {
-	cd "$srcdir/Hyprland-$pkgver"
-	git submodule update --init
+	cd "$srcdir"
 	make fixwlr
 	cd "./subprojects/wlroots/" && meson build/ --prefix="${srcdir}/tmpwlr" --buildtype=release && ninja -C build/ && mkdir -p "${srcdir}/tmpwlr" && ninja -C build/ install && cd ../../
 	make protocols
@@ -64,7 +64,7 @@ build() {
 }
 
 package() {
-	cd "$srcdir/Hyprland-$pkgver"
+	cd "$srcdir"
 	mkdir -p "${pkgdir}/usr/share/wayland-sessions"
 	mkdir -p "${pkgdir}/usr/share/hyprland"
 	install -Dm755 build/Hyprland -t "${pkgdir}/usr/bin"
