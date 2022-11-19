@@ -39,6 +39,6 @@ build() {
 
 package() {
 	cd "${srcdir}/${_pkgname}"
-	install -Dm755 build/hyprpicker -t "${pkgdir}/usr/bin"
+	make install
 	install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${_pkgname}"
 }
