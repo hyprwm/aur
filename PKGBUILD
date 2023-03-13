@@ -36,7 +36,9 @@ depends=(
 	seatd
 	vulkan-icd-loader
 	vulkan-validation-layers
-	xorg-xwayland)
+	xorg-xwayland
+	libliftoff
+	libdisplay-info)
 makedepends=(
 	git
 	cmake
