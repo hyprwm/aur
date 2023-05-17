@@ -52,35 +52,35 @@ source=("${_pkgname}::git+https://github.com/hyprwm/Hyprland.git")
 conflicts=("${_pkgname}")
 provides=(hyprland)
 sha256sums=('SKIP')
-options=(!makeflags !buildflags !strip)
 
 pkgver() {
-  cd "$_pkgname"
-  ( set -o pipefail
-    git describe --long 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-  )
+	cd "$_pkgname"
+	( set -o pipefail
+		git describe --long 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
+		printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+	)
+}
+
+prepare() {
+	cd "$srcdir/$_pkgname"
+	git submodule init
+
+	git config submodule."subprojects/hyprland-protocols".url "$srcdir/hyprland-protocols"
+	git config submodule."subprojects/udis86".url "$srcdir/udis86"
+	git config submodule.wlroots.url "$srcdir/wlroots"
+	git -c protocol.file.allow=always submodule update
 }
 
 build() {
-	cd "${srcdir}/${_pkgname}"
-	git submodule update --init
-	make fixwlr
-	cd "./subprojects/wlroots/" && meson build/ --prefix="${srcdir}/tmpwlr" --buildtype=release && ninja -C build/ && mkdir -p "${srcdir}/tmpwlr" && ninja -C build/ install && cd ../../
-	make protocols
-    make release
-	cd ./hyprctl && make all && cd ..
+	cmake -B build -S "$_pkgname" \
+		-DCMAKE_BUILD_TYPE='None' \
+		-DCMAKE_INSTALL_PREFIX='/usr' \
+		-Wno-dev
+
+	cmake --build build
 }
 
 package() {
-	cd "${srcdir}/${_pkgname}"
-	mkdir -p "${pkgdir}/usr/share/wayland-sessions"
-	mkdir -p "${pkgdir}/usr/share/hyprland"
-	install -Dm755 build/Hyprland -t "${pkgdir}/usr/bin"
-	install -Dm755 hyprctl/hyprctl -t "${pkgdir}/usr/bin"
-	install -Dm644 assets/*.png -t "${pkgdir}/usr/share/hyprland"
-	install -Dm644 example/hyprland.desktop -t "${pkgdir}/usr/share/wayland-sessions"
-	install -Dm644 example/hyprland.conf -t "${pkgdir}/usr/share/hyprland"
-	install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${_pkgname}"
-	install -Dm755 ../tmpwlr/lib/libwlroots.so.11032 -t "${pkgdir}/usr/lib"
+	install -Dm644 "$srcdir/$_pkgname/LICENSE" -t "$pkgdir/usr/share/licenses/$_pkgname"
+	DESTDIR="$pkgdir" cmake --install build
 }
