@@ -2,10 +2,10 @@
 
 _pkgname="hyprland"
 pkgname="${_pkgname}-git"
-pkgver=r1181.gee15ad1
+pkgver=r2910.642030f9
 pkgrel=1
 pkgdesc="A dynamic tiling Wayland compositor based on wlroots that doesn't sacrifice on its looks."
-arch=(any)
+arch=(x86_64)
 url="https://github.com/hyprwm/Hyprland"
 license=('BSD')
 depends=(
@@ -48,16 +48,23 @@ makedepends=(
 	vulkan-headers
 	wayland-protocols
 	xorgproto)
-source=("${_pkgname}::git+https://github.com/hyprwm/Hyprland.git")
+source=("${_pkgname}::git+https://github.com/hyprwm/Hyprland.git"
+	"git+https://github.com/hyprwm/hyprland-protocols.git"
+	"git+https://github.com/canihavesomecoffee/udis86.git"
+	"git+https://gitlab.freedesktop.org/wlroots/wlroots.git")
 conflicts=("${_pkgname}")
 provides=(hyprland)
-sha256sums=('SKIP')
+sha256sums=('SKIP'
+	'SKIP'
+	'SKIP'
+	'SKIP')
 
 pkgver() {
 	cd "$_pkgname"
-	( set -o pipefail
+	(
+		set -o pipefail
 		git describe --long 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
-		printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+			printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 	)
 }
 
